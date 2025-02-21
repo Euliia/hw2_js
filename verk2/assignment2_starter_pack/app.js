@@ -112,27 +112,46 @@ document.addEventListener("DOMContentLoaded", () => {
     S: "#194b6c",
   };
 
-  startButton.addEventListener("click", (event) => {
+  startButton.addEventListener("click", () => {
     play();
   });
-
-  function play() {
-    win = false;
-    order = [];
-    playerOrder = [];
-    flash = 0;
-    intervalId = 0;
-    turn = 1;
-    levelCounter.innerHTML = 1;
-    good = true;
-    for (let i = 0; i < 20; i++) {
-      order.push(Math.floor(Math.random() * 4) + 1);
+  async function play() {
+    try {
+      const response = await fetch("http://localhost:3000/api/v1/game-state", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      order = data.gameState.sequence.map(color => {
+        switch (color) {
+          case "red":
+            return 1;
+          case "yellow":
+            return 2;
+          case "green":
+            return 3;
+          case "blue":
+            return 4;
+          default:
+            return 0;
+        }
+      });
+      playerOrder = [];
+      flash = 0;
+      intervalId = 0;
+      turn = 1;
+      levelCounter.innerHTML = 1;
+      good = true;
+      compTurn = true;
+      intervalId = setInterval(gameTurn, 800);
+    } catch (error) {
+      console.error("Error starting the game:", error);
     }
-    compTurn = true;
-    intervalId = setInterval(gameTurn, 800);
   }
 
-  function gameTurn() {
+  async function gameTurn() {
     on = false;
 
     if (flash == turn) {
@@ -166,16 +185,16 @@ document.addEventListener("DOMContentLoaded", () => {
     pads.A.style.backgroundColor = "#166637";
   }
 
-  function two() {
+  function four() {
     try {
-      let audio = document.getElementById("sound2");
+      let audio = document.getElementById("sound4");
       if (audio) {
         audio.play();
       }
     } catch (e) {
       // Ignore the error if the audio element is not found or cannot be played
     }
-    pads.Q.style.backgroundColor = "#72261d";
+    pads.S.style.backgroundColor = "#194b6c";
   }
 
   function three() {
@@ -209,6 +228,19 @@ document.addEventListener("DOMContentLoaded", () => {
     pads.S.style.backgroundColor = originalcolors.S;
   }
 
+  function flashColor() {
+    pads.A.style.backgroundColor = clickcolor.A;
+    pads.Q.style.backgroundColor = clickcolor.Q;
+    pads.W.style.backgroundColor = clickcolor.W;
+    pads.S.style.backgroundColor = clickcolor.S;
+  }
+
+
+  function winGame() {
+    levelCounter.innerHTML = "WIN!";
+    on = false;
+    win = true;
+  }
 
   function check() {
     if (playerOrder[playerOrder.length - 1] !== order[playerOrder.length - 1]) {
@@ -248,47 +280,53 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function two() {
+    try {
+      let audio = document.getElementById("sound2");
+      if (audio) {
+        audio.play();
+      }
+    } catch (e) {
+      // Ignore the error if the audio element is not found or cannot be played
+    }
+    pads.Q.style.backgroundColor = "#72261d";
+  }
+
   // Handle pad click
-  pads.Q.addEventListener("click", (event) => {
-    if (on) {
-      playerOrder.push(1);
-      check();
-      one();
-      if (!win) {
-        setTimeout(() => {
-          clearColor();
-        }, 300);
-      }
+  pads.Q.addEventListener("click", () => {
+    playerOrder.push(1);
+    check();
+    one();
+    if (!win) {
+      setTimeout(() => {
+        clearColor();
+      }, 300);
     }
   });
 
-  pads.W.addEventListener("click", (event) => {
-    if (on) {
-      playerOrder.push(2);
-      check();
-      two();
-      if (!win) {
-        setTimeout(() => {
-          clearColor();
-        }, 300);
-      }
+  pads.W.addEventListener("click", () => {
+    playerOrder.push(2);
+    check();
+    two();
+    if (!win) {
+      setTimeout(() => {
+        clearColor();
+      }, 300);
     }
   });
 
-  pads.A.addEventListener("click", (event) => {
-    if (on) {
-      playerOrder.push(3);
-      check();
-      three();
-      if (!win) {
-        setTimeout(() => {
-          clearColor();
-        }, 300);
-      }
+  pads.A.addEventListener("click", () => {
+    playerOrder.push(3);
+    check();
+    three();
+    if (!win) {
+      setTimeout(() => {
+        clearColor();
+      }, 300);
     }
   });
 
-  pads.S.addEventListener("click", (event) => {
+  pads.S.addEventListener("click", () => {
     if (on) {
       playerOrder.push(4);
       check();
