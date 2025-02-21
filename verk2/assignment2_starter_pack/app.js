@@ -74,6 +74,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const startButton = document.querySelector("#start-btn");
   const soundselect = document.querySelector("#sound-select");
 
+  const synth = new Tone.Synth().toDestination();
+
+  const playTune = () => {
+    //initialise a timer to decide when to play individual notes
+    const now = Tone.now();
+
+    //Play a C4 as an 8th note
+    synth.triggerAttackRelease("c4", "8n", now);
+
+    //Play a F#4 as a 4th note, after half a second
+    synth.triggerAttackRelease("f#4", "4n", now + 0.5);
+
+    //Play a D#4 as a half note after 1 second
+    synth.triggerAttackRelease("d#4", "2n", now + 1);
+
+  };
+
   const pads = {
     Q: document.getElementById("pad-red"),
     W: document.getElementById("pad-yellow"),
